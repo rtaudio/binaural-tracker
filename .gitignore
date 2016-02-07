@@ -1,0 +1,11 @@
+/Debug/*.wav
+binaural-tracker.sdf
+*.pdb
+*.ilk
+*.idb
+*.obj
+*.enc
+*.pkf
+*.iobj
+*.suo
+*.opensdf

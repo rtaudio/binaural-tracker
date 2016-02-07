@@ -1,0 +1,18 @@
+﻿Der Buildvorgang wurde am 04.02.2016 21:37:25 gestartet.
+     1>Projekt "c:\dev\binaural-tracker\binaural-tracker\binaural-tracker.vcxproj" auf Knoten "2", Build Ziel(e).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\dev\ita-vr\ITAToolkit\Include" /IC:\dev\jack2\common /I"C:\dev\arm-dev\libs\ita\ITAConvolution\Include" /I"C:\dev\rpi-streamer\src\shared" /I"C:\dev\ita-vr\ITAFFT\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt "..\..\rpi-streamer\src\shared\platform.cpp"
+         platform.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"c:\dev\binaural-tracker\Release\binaural-tracker.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\Program Files (x86)\Jack\lib" /LIBPATH:"C:\dev\ita-vr\ITAFFT\Lib\Win32" /LIBPATH:"C:\dev\ita-vr\ITAToolkit\Lib\Win32" /LIBPATH:"C:\dev\ita-vr\3rdparty\fftw3" libjack.lib ITAToolkit.lib ITAFFT.lib "libfftw3f-3.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"c:\dev\binaural-tracker\Release\binaural-tracker.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"c:\dev\binaural-tracker\Release\binaural-tracker.lib" /MACHINE:X86 /SAFESEH Release\platform.obj
+         Release\BinauralTracker.obj
+         Release\main.obj
+         Code wird generiert.
+         All 268 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+         Codegenerierung ist abgeschlossen.
+         binaural-tracker.vcxproj -> c:\dev\binaural-tracker\Release\binaural-tracker.exe
+     1>Die Erstellung von Projekt "c:\dev\binaural-tracker\binaural-tracker\binaural-tracker.vcxproj" ist abgeschlossen (Build Ziel(e)).
+
+Der Buildvorgang wurde erfolgreich ausgeführt.
+
+Verstrichene Zeit 00:00:01.18

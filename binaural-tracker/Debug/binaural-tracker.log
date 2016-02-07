@@ -1,0 +1,23 @@
+﻿Der Buildvorgang wurde am 07.02.2016 16:50:46 gestartet.
+     1>Projekt "c:\dev\binaural-tracker\binaural-tracker\binaural-tracker.vcxproj" auf Knoten "2", Build Ziel(e).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"C:\dev\ita-vr\ITAToolkit\Include" /IC:\dev\jack2\common /I"C:\dev\arm-dev\libs\ita\ITAConvolution\Include" /I"C:\dev\rpi-streamer\src\shared" /I"C:\dev\ita-vr\ITAFFT\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Calibration.cpp
+         Calibration.cpp
+     1>c:\dev\binaural-tracker\binaural-tracker\audioutils.h(5): warning C4099: "SignalBuffer": Geben Sie den zuerst unter Verwendung von "struct" und jetzt unter Verwendung von "class" gesehenen Namen ein
+         c:\dev\binaural-tracker\binaural-tracker\signalbuffer.h(12): note: Siehe Deklaration von "SignalBuffer"
+     1>c:\dev\binaural-tracker\binaural-tracker\calibration.cpp(50): warning C4129: "c": nicht erkannte Folge von Escapesequenz
+     1>c:\dev\binaural-tracker\binaural-tracker\calibration.cpp(60): warning C4129: "s": nicht erkannte Folge von Escapesequenz
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"c:\dev\binaural-tracker\Debug\binaural-tracker.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\Jack\lib" /LIBPATH:"C:\dev\ita-vr\ITAFFT\Lib\Win32" /LIBPATH:"C:\dev\ita-vr\ITAToolkit\Lib\Win32" /LIBPATH:"C:\dev\ita-vr\3rdparty\fftw3" /LIBPATH:"C:\Program Files (x86)\Mega-Nerd\libsndfile\lib" libjack.lib ITAToolkitD.lib ITAFFTD.lib "libfftw3f-3.lib" "libsndfile-1.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"c:\dev\binaural-tracker\Debug\binaural-tracker.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"c:\dev\binaural-tracker\Debug\binaural-tracker.lib" /MACHINE:X86 Debug\platform.obj
+         Debug\AudioDriver.obj
+         Debug\AudioUtils.obj
+         Debug\BinauralTracker.obj
+         Debug\Calibration.obj
+         Debug\main.obj
+         Debug\SignalBuffer.obj
+         binaural-tracker.vcxproj -> c:\dev\binaural-tracker\Debug\binaural-tracker.exe
+     1>Die Erstellung von Projekt "c:\dev\binaural-tracker\binaural-tracker\binaural-tracker.vcxproj" ist abgeschlossen (Build Ziel(e)).
+
+Der Buildvorgang wurde erfolgreich ausgeführt.
+
+Verstrichene Zeit 00:00:00.90

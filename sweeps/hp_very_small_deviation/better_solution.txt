@@ -1,0 +1,1 @@
+>> figure; plot([spk_matched1( (1:2^15+20000) )  spk_matched2((1:2^15+20000) + 12)])
