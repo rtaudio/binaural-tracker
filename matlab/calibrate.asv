@@ -1,8 +1,7 @@
 function [ dist drift ] = calibrate( n_passes )
 
-dbstop if error
 n_speakers = 2;
-crossCompare = 1;
+crossCompare = 0
 
 if ~exist('n_passes','var')
     n_passes = 2;
@@ -15,22 +14,21 @@ Fs = 48000;
 C = 343;
 wavPattern = 'R:\\calibspk%d_pass%d.WAV';
 sweep = audioread('R:\sweep.WAV');
-%sweep = sweep((2^15):end); % TODO
 
 tailLength = 18000;
 
 display('### Reading Calibration files...');
 
-ss = (1:(2^fftOrder)+tailLength);
+ss = (1:2^fftOrder)+tailLength;
 sweep_matched = sweep(ss);
 
 deltaSpkAll = zeros(n_passes, n_speakers);
 timestamps = zeros(n_passes, n_speakers);
 
-for pi = 1:n_passes
+for pi = 2:n_passes % TODO
    
     
-    calibSpk = zeros(n_speakers, length(sweep));
+    calibSpk = zeros(n_speakers, 2^(fftOrder+1));
     deltaSpk = zeros(n_speakers,1);
      spk_matched = zeros(n_speakers, 2^(fftOrder+1));
     
@@ -38,11 +36,10 @@ for pi = 1:n_passes
         [rec, ts] = wav_read_safe(sprintf(wavPattern, si-1, pi-1));
         timestamps(pi,si) = ts;
         rec  = rec(:,1);
-        %rec = rec(2^15:end); 
         
         % fix: rechter LS hat phase gedreht?!
-        if si == 2
-            %rec = -rec;
+        if si == 1
+            rec = -rec;
         end
         
         if isempty(rec)
@@ -50,11 +47,7 @@ for pi = 1:n_passes
             return;
         end
         
-        delta = find_delay(rec, sweep, noiseRed, 1 );
-        
-        if si == 2
-            %delta = delta + 23;
-        end
+        delta = find_delay(rec, sweep, noiseRed );
         
         % cross validation with sweep only
         %sweepOnlyDelta = abs(find_delay(rec((1:2^fftOrder) + round(delta-200)), sweep(1:2^fftOrder),noiseRed)-200);
@@ -75,8 +68,8 @@ for pi = 1:n_passes
     
     if crossCompare
         % cross-compare speakers
-        spkDeltaCross1 = abs(find_delay(calibSpk(2,(1:2^fftOrder) +round(deltaMean))',calibSpk(1,(1:2^fftOrder) +round(deltaMean))', 0, 0));
-        spkDeltaCross2 = abs(find_delay(calibSpk(1,(1:2^fftOrder) +round(deltaMean))',calibSpk(2,(1:2^fftOrder) +round(deltaMean))', 0, 0));
+        spkDeltaCross1 = abs(find_delay(calibSpk(2,(1:2^fftOrder) +round(deltaMean))',calibSpk(1,(1:2^fftOrder) +round(deltaMean))', 0));
+        spkDeltaCross2 = abs(find_delay(calibSpk(1,(1:2^fftOrder) +round(deltaMean))',calibSpk(2,(1:2^fftOrder) +round(deltaMean))', 0));
 
         % for plotting cross-comparision
         if  spkDeltaCross1 < spkDeltaCross2
@@ -99,16 +92,21 @@ for pi = 1:n_passes
         subplot(3,1,1);
         plot([sweep_matched spk_matched(1,1:length(sweep_matched))' spk_matched(2,1:length(sweep_matched))']);
         legend('sweep','spk1','spk2');
-        grid on;        
-        %ylim([-0.3 0.3]); gca.XTick = [27500 : 100: 30000]-11700; xlim([27700 29000]-11700);
-
+        grid on;
+        xlim([27700 29000]-11700);
+        %ax = gca;
+        %ax.XTick = [27500 : 10: 430000];
+        ylim([-0.3 0.3]);
+                ax = gca;
+        ax.XTick = [27500 : 100: 30000]-11700;
+        
         
         l = length(sweep_matched);
         subplot(3,1,2);
         if ~isnan(spkDeltaCross)
             %plot([zeros(l,1) calibSpk(1,round(deltaMean*1.5)+ (1:l))' calibSpk(2,round(deltaMean*1.5)+ (1:l))' cross_match(round(deltaMean*1.5)+ (1:l))']);
             sp = round(abs(spkDeltaCross)+10);
-            in = (sp:(length(sweep_matched)-sp)) + round(deltaMean)*2;
+            in = (sp:(length(sweep_matched)+tailLength-sp)) + round(deltaMean)*2;
             plot([zeros(length(in),1)  calibSpk(1,in-round(spkDelta))' calibSpk(2,in)' calibSpk(1,in-round(spkDeltaCross))',  calibSpk(1,in-round(0))']);
             legend('null','spk1 (match)','spk2','spk1 (xcor)', 'spk1');
             grid on;
@@ -122,22 +120,23 @@ for pi = 1:n_passes
        
         
         subplot(3,1,3);
-        sp = 40;
-        %y11 = []; for x=-sp:sp; y11(sp+1+x) = sum((sweep_matched( ((sp+1):(end-sp))) - spk_matched(1, x + ((sp+1):(2^fftOrder-sp)))').^2); end;
-        %y21 = []; for x=-sp:sp; y21(sp+1+x) = sum((sweep_matched( ((sp+1):(end-sp))) - spk_matched(2, x + ((sp+1):(2^fftOrder-sp)))').^2); end;
+        sp = 50;
+       % y1 = []; for x=-sp:sp; y1(sp+1+x) = sum((sweep_matched( ((sp+1):(end-sp))) - spk_matched(1, x + ((sp+1):(2^fftOrder-sp)))').^2); end;
+        %y2 = []; for x=-sp:sp; y2(sp+1+x) = sum((sweep_matched( ((sp+1):(end-sp))) - spk_matched(2, x + ((sp+1):(2^fftOrder-sp)))').^2); end;
         
         % compute residual energy for different offsets over first 2
         % speaker signals (where both signal overlap)
         y1 = []; y2 = [];
+        oi = (1:(length(sweep)-round(deltaSpk(i))
         for x=-sp:sp;
-            y1(sp+1+x) = sum((sweep(sp:(end-sp-round(deltaSpk(1)))) - calibSpk(1, (sp+round(deltaSpk(1))+x):(end-sp+x))').^2);
-            y2(sp+1+x) = sum((sweep(sp:(end-sp-round(deltaSpk(2)))) - calibSpk(2, (sp+round(deltaSpk(2))+x):(end-sp+x))').^2);
-        end;        
-        plot(min(y1));  hold on; % dummy (null)
+            y1(sp+1+x) = sum((sweep() - calibSpk(1, )').^2);
+            y2(sp+1+x) = sum((sweep( ((sp+1):(end-sp))) - calibSpk(2, x + ((sp+1):(2^fftOrder-sp)))').^2);
+        end;
+         for x=-sp:sp;  end;
+        
+        plot(min(y1));  hold on;
         plot(-sp:sp, y1);
         plot(-sp:sp, y2);
-        %plot(-sp:sp, y11);
-        %plot(-sp:sp, y21);
         legend('null', 'spk1','spk2');
         grid on;
         plot([0,0],[y1(sp+1) y2(sp+1)]);

@@ -43,20 +43,20 @@ process(jack_nframes_t nframes, void *arg)
 {
 	jack_default_audio_sample_t *out1, *out2;
 
-	out1 = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port2, nframes);
-	out2 = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port1, nframes);
+	out1 = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port1, nframes);
+	out2 = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port2, nframes);
 
 	int wi = (g_waveIndex) % (g_props.uiLength- nframes);
 	int wiCarrier = (g_waveIndex) % (g_propsCarrier.uiLength - nframes);
 
 	memcpy(out1, g_data[0] + wi, nframes*sizeof(jack_nframes_t));
-	if (g_props.uiChannels > 1)
-		memcpy(out2, g_data[1] + wi, nframes*sizeof(jack_nframes_t));
+	//if (g_props.uiChannels > 1)
+	//	memcpy(out2, g_data[1] + wi, nframes*sizeof(jack_nframes_t));
 
 
-	fm_add(out1, g_dataCarrier[0] + wiCarrier, nframes);
-	if (g_props.uiChannels > 1)
-		fm_add(out2, g_dataCarrier[1] + wiCarrier, nframes);
+	//fm_add(out1, g_dataCarrier[0] + wiCarrier, nframes);
+	//if (g_props.uiChannels > 1)
+	//	fm_add(out2, g_dataCarrier[1] + wiCarrier, nframes);
 
 	g_waveIndex += nframes;
 

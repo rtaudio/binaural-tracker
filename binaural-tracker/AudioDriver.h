@@ -11,6 +11,9 @@
 class AudioDriver
 {
 public:
+
+	typedef std::vector<const char *> PortArray;
+
 	enum class Connect {
 		ToCapture,
 		ToPlayback,
@@ -46,32 +49,27 @@ public:
 
 
 		void execute(bool async=false) {
-			PlatformLocalLock(driver->m_mtxActionQueue);
-			driver->m_evtActionQueueProcessed.Reset();
+			PlatformLocalLock ll(driver->m_mtxActionQueue);
 
 			while (actions.size()) {
 				driver->m_actionQueue.push(actions.front());
 				actions.pop();
 			}
-
-			driver->m_newActions = true;
-
-			if (!async) {
-				driver->m_evtActionQueueProcessed.Wait();
-			}
+			driver->commit();
 		}
 	};
 
 	AudioDriver();
 	~AudioDriver();
 
-	inline int getNumCaptureChannels() {return m_portsCaptureNum;}
-	inline int getNumPlaybackChannels() {return m_portsPlaybacleNum;}
+	inline int getNumCaptureChannels() const {return m_portsCaptureNum;}
+	inline int getNumPlaybackChannels() const {return m_portsPlaybacleNum;}
+	inline int getSampleRate() const { return m_sampleRate; }
+	inline int getBlockSize() const { return m_blockSize; }
+	inline uint32_t getClock() const {return m_totalFramesProcessed;}
 
-	inline int getSampleRate() { return m_sampleRate; }
-	inline int getBlockSize() { return m_blockSize; }
 
-
+	/*
 	inline std::vector<jack_port_t*> NewInput(std::string baseName, int nChannels) {
 		return newPorts(baseName, nChannels, false);
 	}
@@ -79,9 +77,9 @@ public:
 	inline std::vector<jack_port_t*> NewOutput(std::string baseName, int nChannels) {
 		return newPorts(baseName, nChannels, true);
 	}
+	*/
 
-
-	void playOnceBlocking(float *samples, int len, int onChannel);
+	void MuteOthers(bool mute=true);
 
 	static const int MAX_SIGNAL_BUFFERS = 16;
 	static const int MAX_CHANNELS_PER_BUFFER = 4;
@@ -94,6 +92,17 @@ private:
 	void addObserver(SignalBufferObserver *pool);
 	void removeSignal(SignalBuffer *buffer);
 	void removeObserver(SignalBufferObserver *buffer);
+
+	inline void commit(bool async = false) {
+		while (m_newActions) {
+			m_evtActionQueueProcessed.Wait(m_blockSize * 2000 / m_sampleRate);
+		}
+		m_evtActionQueueProcessed.Reset();
+		m_newActions = true;
+		if (!async) {
+			m_evtActionQueueProcessed.Wait();
+		}
+	}
 
 	static int jackProcess(jack_nframes_t nframes, void *arg);
 	static void jackShutdown(void *arg);
@@ -111,6 +120,8 @@ private:
 	const char **m_portsCapture;
 	const char **m_portsPlayback;
 	int m_portsCaptureNum, m_portsPlaybacleNum;
+
+	std::vector<PortArray> m_mutedPorts;
 
 	bool m_running;
 	unsigned long m_totalFramesProcessed;

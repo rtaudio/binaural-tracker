@@ -276,6 +276,28 @@ struct SignalBufferObserver {
 			throw "Waiting for a signal with undefined interval!";
 		return m_evCommit.Wait() && commiting;
 	}
+
+
+	std::vector<float*> getTimeStageAll()
+	{
+		std::vector<float*> allData;
+
+		for (auto h : m_hists) {
+			for (int ci = 0; ci < h->channels; ci++) {
+				allData.push_back(h->getPtrTS(ci));
+			}
+		}
+
+		return allData;
+	}
+
+
+	void normalizeSignals()
+	{
+		for (auto h : m_hists) {
+			h->normalize();
+		}
+	}
 };
 
 

@@ -4,8 +4,8 @@
 
 class Calibration
 {
-	static const int NumberRepetions = 3;
-	static const int WaitBetweenRepetitions = 4000; //ms
+	static const int NumberRepetions = 2;
+	static const int WaitBetweenRepetitions = 0; //ms
 public:
 	Calibration(AudioDriver *driver);
 	~Calibration();

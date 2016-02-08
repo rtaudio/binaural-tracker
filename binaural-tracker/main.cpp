@@ -14,11 +14,12 @@ int main(int argc, char **argv) {
 	g_isRunning = true;
 	signal(SIGINT, signalHandler);
 
-	BinarualTracker *tracker = new BinarualTracker();
-	tracker->Calibrate();
+	BinarualTracker tracker;
+	tracker.Calibrate();
+	tracker.Start();
 	
 
-	while (g_isRunning && tracker->IsRunning()) {
+	while (g_isRunning && tracker.IsRunning()) {
 		usleep(1000 * 500);
 	}
 

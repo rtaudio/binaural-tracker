@@ -3,6 +3,7 @@
 #include <string>
 
 class SignalBuffer;
+class SignalBufferObserver;
 
 class AudioUtils
 {
@@ -17,6 +18,9 @@ public:
 
 	static void wavWrite(std::string fileName, float *ch0, uint32_t length);
 	static void wavWrite(std::string fileName, float *ch0, float *ch1, uint32_t length);
+
 	static void wavWrite(std::string fileName, SignalBuffer &signal);
+
+	static void wavWrite(std::string fileName, SignalBufferObserver &observer);
 };
 

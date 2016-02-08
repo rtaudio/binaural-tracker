@@ -1,42 +1,83 @@
-%close all
-%figure;
-
-deltas = [];
-delta_imax = 30;
-delta_i = 1;
-reject_outliers = 0;
-
-delta_min = 10^8;
-delta_max = -10^8;
+deltas = zeros(2^20,1);
 
 Fs = 48000;
 C = 343;
 
+hist_len = 10;
 
-[speaker_offsets drift] = calibrate();
+clock = 0;
 
-figure;
+[speaker_offsets, drift2] = calibrate(2);
+
+%figure;
 %profile on
-for i = 1:10000
-    try
-        timeData = audioread('R:\sig_mic.WAV');
-    catch
-       pause(10/1000);
-       continue
-    end    
+
+
+i = 0;
+timeDataPrev = [];
+for ii = 1:10000
+    timeData = wav_read_safe('R:\sig_mic.WAV', timeDataPrev); 
     if isempty(timeData)
-        pause(10/1000);
+        pause(1/1000);
         continue;
     end
+    timeDataPrev = timeData;   
+    nSamples = size(timeData,1);
+    clock = clock + nSamples;
+    i = i + 1;
     
-    ref = timeData(:,1);
-    mic = timeData(:,2);
+    ref = timeData(:,1:2);
+    mic = timeData(:,3); % only mono mic yet
           
     % energy-normalization
     %ref = ref / sqrt(mean(ref .^ 2));
     %mic = mic / sqrt(mean(mic .^ 2));
 
+    deltaN = find_delay(mic, ref(:,2)) - clock*drift/13;    
+    deltas(i) = deltaN;
+    
+    
+    
+    ref_matched = ref(1:(end-round(deltaN)),2);
+    mic_matched = mic((1+round(deltaN)):end);
+    
+    
+    subplot(2,1,1);
+        plot([ref_matched mic_matched]);
+        ylim([-1 1]);
+        grid on;
+        
 
+     recentDeltas = deltas(max(1,i-hist_len):i);
+     
+     md = median(recentDeltas);
+     
+     subplot(2,1,2);
+     
+        h =   histogram((deltas(max(1,i-hist_len*8):i)), 200); 
+        h.FaceColor = [0.5 0.5 0.5];
+         h.EdgeColor = [1 1 1];
+        hold on;        
+        histogram((recentDeltas), 200); 
+        xlim( (floor(md/200+.5)*200 + [-100 100]));
+        ylim([0 hist_len]);
+        plot([md md], [0 hist_len], 'LineWidth',3);
+        grid on;
+        hold off;
+
+        
+    
+    fprintf('Delta: %5.1f cm\n', deltaN/Fs*C*100);
+    
+    
+    
+    drawnow;
+    continue;
+    
+    deltaN = find_delay(mic, ref);
+    
+    
+    
     deltaN = find_delay(mic, ref);
     
     d = 0;

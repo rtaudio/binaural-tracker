@@ -1,3 +1,6 @@
+#include <fstream>
+#include <string>
+#include <iostream>
 
 #include "BinauralTracker.h"
 
@@ -26,20 +29,38 @@ BinarualTracker::BinarualTracker()
 	m_SignalBuffer = new SignalBuffer(NUM_CHANNELS, m_fftSize);
 	m_micBuffer = new SignalBuffer(NUM_CHANNELS, m_fftSize);
 
-	m_signalHistoryPool.updateInterval = sampleRate / 20;
+	m_signalHistoryPool.updateInterval = sampleRate / 10;
 	m_signalHistoryPool.addHist(m_SignalBuffer);
 	m_signalHistoryPool.addHist(m_micBuffer);
+}
 
-	//driver.add(m_SignalBuffer, "signal", AudioDriver::Connect::ToPlaybackSource);
-	//driver.addSignal(m_micBuffer, "mic", AudioDriver::Connect::ToCapture);
+BinarualTracker::~BinarualTracker()
+{
+	Stop();
+}
 
-	//driver.add(&m_signalHistoryPool);
-	
+void BinarualTracker::Start()
+{
+	AudioDriver::Request req(&driver);
+	req
+		.addSignal(m_SignalBuffer, "signal", AudioDriver::Connect::ToPlaybackSource)
+		.addSignal(m_micBuffer, "mic", AudioDriver::Connect::ToCapture)
+		.addObserver(&m_signalHistoryPool)
+		.execute();
+
+
 	m_isRunning = true;
 	PlatformThread::Routine updateThread(std::bind(&BinarualTracker::_updateThreadMain, this, std::placeholders::_1));
 	m_updateThread = new PlatformThread(updateThread);
 }
 
+
+void BinarualTracker::Stop()
+{
+	m_isRunning = false;
+	m_updateThread->Join();
+	delete m_updateThread;
+}
 
 void BinarualTracker::Calibrate()
 {
@@ -71,6 +92,16 @@ void  BinarualTracker::_updateThreadMain(void *arg)
 			continue;
 
 		printf("UPDATE!\n");
+
+		{
+			std::ofstream out("R:\sig_mic.WAV.TS");
+			out << m_signalHistoryPool.lastUpdate;
+		}
+
+		m_signalHistoryPool.normalizeSignals();
+		AudioUtils::wavWrite("r:\sig_mic.WAV", m_signalHistoryPool);
+
+
 		auto micSpectrumInv = m_micBuffer->getFreq(0, m_fftSize, false);
 
 		const float * sigSpectrum;
@@ -98,6 +129,7 @@ void  BinarualTracker::_updateThreadMain(void *arg)
 				//debug_buf[c][j] = sigSpectrum[j * 2];
 			}*/
 		}
+
 
 
 		/*

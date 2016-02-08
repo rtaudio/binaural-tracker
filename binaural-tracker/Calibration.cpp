@@ -1,4 +1,7 @@
+#include <fstream>
+#include <string>
 #include <iostream>
+
 #include "Calibration.h"
 #include "AudioUtils.h"
 #include <jack/jack.h>
@@ -16,13 +19,21 @@ Calibration::Calibration(AudioDriver *driver)
 	float *sweep = new float[len];
 	AudioUtils::wavRead("sweep15.wav", sweep, len);
 
+	driver->MuteOthers(true);
+
 	AudioDriver::Request req(driver);
 	
 	SignalBuffer inBuffer(nc, len);
 	
-	
+
+	uint32_t firstTime = -1;
+	uint32_t ot;
+
+	uint32_t startTime = driver->getClock();
+
 	for (int ri = 0; ri < NumberRepetions; ri++)
 	{
+		
 		for (int ci = 0; ci < np; ci++) {
 			std::vector<float*> channels(np, NULL);
 			channels[ci] = sweep;
@@ -49,11 +60,19 @@ Calibration::Calibration(AudioDriver *driver)
 			inBuffer.normalize();
 			AudioUtils::wavWrite("R:\calib"+ suffix + ".WAV", inBuffer);
 
-			std::cout << "GOT DATA! " << suffix << std::endl;
-			// here we can safely access buffers
-		}
+			std::ofstream out("R:\calib" + suffix + ".WAV.TS");
+			out << observer.lastUpdate;
 
-		if (ri < (NumberRepetions - 1))
+			std::cout << "GOT DATA! " << suffix << std::endl;
+
+			ot = observer.lastUpdate;
+
+		}
+		
+		if (firstTime == -1)
+			firstTime = ot;
+
+		if (ri < (NumberRepetions - 1) && WaitBetweenRepetitions)
 			usleep(1000 * WaitBetweenRepetitions);
 	}
 
@@ -61,7 +80,11 @@ Calibration::Calibration(AudioDriver *driver)
 
 	delete[] sweep;
 
-	std::cout << "Calibration done!";
+	driver->MuteOthers(false);
+
+	float dt = (float)(ot - firstTime) / (float)driver->getSampleRate() / ((float)NumberRepetions-1.0f);
+	std::cout << "Calibration done, " << NumberRepetions << " passes, " << dt << " s/pass" ;
+	
 }
 
 

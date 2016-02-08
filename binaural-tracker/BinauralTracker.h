@@ -29,7 +29,12 @@
 class BinarualTracker {
 public:
 	BinarualTracker();
+	~BinarualTracker();
+
 	void Calibrate();
+	void Start();	
+	void Stop();
+
 	inline bool IsRunning() { return m_isRunning; }
 
 	PlatformThread *m_updateThread;

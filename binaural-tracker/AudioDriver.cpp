@@ -1,6 +1,8 @@
 #include "AudioDriver.h"
 
+#include <fstream>
 #include <string>
+#include <iostream>
 
 
 AudioDriver::AudioDriver() :
@@ -19,11 +21,48 @@ AudioDriver::AudioDriver() :
 	m_blockSize = jack_get_buffer_size(m_jackClient);
 
 	m_running = true;
+
+	m_mutedPorts = std::vector<PortArray>(m_portsPlaybacleNum, std::vector<const char *>());
 }
 
 
 AudioDriver::~AudioDriver()
 {
+	m_running = false;
+	//jack_deactivate(m_jackClient);
+	jack_client_close(m_jackClient);
+}
+
+
+void AudioDriver::MuteOthers(bool mute)
+{
+	PlatformLocalLock ll(m_mtxActionQueue);
+
+	for (int ci = 0; ci < m_portsPlaybacleNum; ci++) {
+		if (mute) {
+			const char **portsAudioSource = jack_port_get_all_connections(m_jackClient, jack_port_by_name(m_jackClient, m_portsPlayback[ci]));
+			if (!portsAudioSource || !portsAudioSource[0]) {
+				continue;
+			}
+
+			while (auto p = *(portsAudioSource++)) {
+				if (jack_disconnect(m_jackClient, p, m_portsPlayback[ci])) {
+					throw "Cannot disconnect playback source from playback port!";
+				}
+
+				m_mutedPorts[ci].push_back(p);
+			}
+		}
+		else {
+			for (auto p : m_mutedPorts[ci]) {
+				if (jack_connect(m_jackClient, p, m_portsPlayback[ci])) {
+					throw "Cannot re-connect playback source to playback port!";
+				}
+			}
+		}
+	}
+
+	commit(); // sync with driver
 }
 
 int uniquePtrArrayAdd(void **array, int len, void* ptr)
@@ -217,17 +256,22 @@ int AudioDriver::jackProcess(jack_nframes_t nframes, void *arg)
 	AudioDriver *ad = (AudioDriver*)arg;
 
 	if (!ad->m_running)
-		return 0;
+		return 1;
 
 	if (ad->m_newActions) {	
-		PlatformLocalLock ll(ad->m_mtxActionQueue); // TODO: should be lock free!
-		ad->m_newActions = false;
+		printf("AudioDriver: processing queue...\n");
 
 		while (ad->m_actionQueue.size()) {
-			ad->m_actionQueue.front()();
+			try {
+				ad->m_actionQueue.front()();
+			}
+			catch (const std::string &ex) {
+				std::cout << "AudioDriver exception:" << ex;
+			}
 			ad->m_actionQueue.pop();
 		}
 
+		ad->m_newActions = false;
 		ad->m_evtActionQueueProcessed.Signal();
 	}
 
